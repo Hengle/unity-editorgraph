@@ -59,7 +59,7 @@ public class GraphWindow : EditorWindow
     GraphGUI graphGUI;
     Node node;
     private float zoom = 1;
-    private Vector2 scrPos;
+    private Vector2 scrollPos;
     [MenuItem("Test/Graph")]
     static void Main()
     {
@@ -74,6 +74,7 @@ public class GraphWindow : EditorWindow
         graph.AddNode(node);
         graphGUI = GraphGUI.CreateInstance<GUITemp>();
         graphGUI.graph = graph;
+        GUIScaleUtility.Init();
     }
     private void OnGUI()
     {
@@ -91,32 +92,40 @@ public class GraphWindow : EditorWindow
         //}
         DrawScrollView();
     }
+    float maxCanvasSize = 2.5f;
     void DrawScrollView()
     {
         zoom = GUILayout.HorizontalSlider(zoom, 0.5f, 2);
-        using (var scrollScope = new EditorGUILayout.ScrollViewScope(scrPos))
+        var width = position.width;
+        Debug.Log(width);
+        using (var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPos))
         {
-            scrPos = scrollScope.scrollPosition;
-            var graphRegion = GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(600), GUILayout.Height(600));
-            var viewRect = new Rect(0, 0, 120/zoom, 120);
-
-            GUIUtility.ScaleAroundPivot(Vector2.one * zoom, -scrPos);
+            scrollPos = scrollScope.scrollPosition;
+            var canvasRect = new Rect(-scrollPos.x, -scrollPos.y, position.width * maxCanvasSize, position.height * maxCanvasSize);
+            var viewRect = new Rect(0, 0, (scrollPos.x + width - 20) / zoom, 120);
+            //GUIUtility.ScaleAroundPivot(Vector2.one * zoom, Vector2.zero);
             GUI.BeginClip(viewRect);
-            for (int i = 0; i < 6; i++)
+            using (var clipScore = new GUI.ClipScope(viewRect))
             {
-                for (int j = 0; j < 6; j++)
+                var vect = GUIScaleUtility.BeginScale(ref canvasRect, canvasRect.size * 0.5f, zoom, true, false);
+
+                for (int i = 0; i < 6; i++)
                 {
-                    var rect = new Rect(i * 100, j * 100, 100, 100);
-                    GUI.Button(rect, i + ":" + j);
+                    for (int j = 0; j < 6; j++)
+                    {
+                        var rect = new Rect(i * 100, j * 100, 100, 100);
+                        GUI.Button(rect, i + ":" + j);
+                    }
                 }
+                GUIScaleUtility.EndScale();
             }
             GUI.EndClip();
             GUI.matrix = Matrix4x4.identity;
+            GUILayoutUtility.GetRect(600/zoom,600 / zoom);
         }
         var rect0 = GUILayoutUtility.GetRect(0, 100);
         EditorGUI.LabelField(rect0, "Label");
     }
-
     private void CallBack(Rect selectionRect)
     {
         Debug.Log(selectionRect);
