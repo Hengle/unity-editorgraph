@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Callbacks;
 using UnityEditor.IMGUI;
-using UnityEditor.WebGL;
 using UnityEditor.Graphs;
 using UnityEditor;
 using System;
@@ -38,15 +37,10 @@ public class NodeTemp : Node
         base.InputEdgeChanged(e);
     }
 }
-public class GUITemp : GraphGUI
+public class EditorGrapGUI : GraphGUI
 {
     protected new const float kGraphPaddingMultiplier = 2;
-    public void SetZoom(float value)
-    {
-        CeilValueToGrid(value);
-        //kGraphPaddingMultiplier = value;
-        m_GraphClientArea = new Rect();
-    }
+   
     protected override void AddNode(Node node)
     {
         base.AddNode(node);
@@ -56,9 +50,11 @@ public class GUITemp : GraphGUI
 public class GraphWindow : EditorWindow
 {
     Graph graph;
-    GraphGUI graphGUI;
+    EditorGrapGUI graphGUI;
     Node node;
     private float zoom = 1;
+    float zoomMax = 2f;
+
     private Vector2 scrollPos;
     [MenuItem("Test/Graph")]
     static void Main()
@@ -72,59 +68,56 @@ public class GraphWindow : EditorWindow
         node.name = "test";
         node.position = new Rect(10, 10, 100, 100);
         graph.AddNode(node);
-        graphGUI = GraphGUI.CreateInstance<GUITemp>();
+        graphGUI = GraphGUI.CreateInstance<EditorGrapGUI>();
         graphGUI.graph = graph;
+        graphGUI.drawSelectionRectCallback += CallBack;
         GUIScaleUtility.Init();
     }
     private void OnGUI()
     {
-        //if (graphGUI != null)
-        //{
-        //    graphGUI.BeginToolbarGUI(new Rect(0, 0, position.width, EditorGUIUtility.singleLineHeight));
-
-        //    zoom = GUILayout.HorizontalSlider(zoom, 0, 10);
-        //    graphGUI.drawSelectionRectCallback += CallBack;
-        //    Debug.Log(graphGUI.zoomLevel);
-        //    graphGUI.EndToolbarGUI();
-        //    graphGUI.BeginGraphGUI(this, new Rect(0, EditorGUIUtility.singleLineHeight, position.width, position.height));
-        //    graphGUI.NodeGUI(node);
-        //    graphGUI.EndGraphGUI();
-        //}
+        DrawHeader();
         DrawScrollView();
     }
-    float maxCanvasSize = 2.5f;
     void DrawScrollView()
     {
-        zoom = GUILayout.HorizontalSlider(zoom, 0.5f, 2);
-        var width = position.width;
-        Debug.Log(width);
+        var windowRect = new Rect(0, 0, position.width - 15, position.height - 35);
+
         using (var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPos))
         {
             scrollPos = scrollScope.scrollPosition;
-            var canvasRect = new Rect(-scrollPos.x, -scrollPos.y, position.width * maxCanvasSize, position.height * maxCanvasSize);
-            var viewRect = new Rect(0, 0, (scrollPos.x + width - 20) / zoom, 120);
-            //GUIUtility.ScaleAroundPivot(Vector2.one * zoom, Vector2.zero);
+            //分配滑动区尺寸
+            var canvasRect = GUILayoutUtility.GetRect(windowRect.width * zoomMax / zoom, windowRect.height * zoomMax / zoom);
+            //绘制canvas
+            graphGUI.BeginGraphGUI(this, canvasRect);
+            //开始进行缩放并去除以前的裁切
+            var vect = GUIScaleUtility.BeginScale(ref windowRect, windowRect.size * 0.5f, zoom, false);
+            var viewRect = new Rect(-scrollPos, 2 * vect + scrollPos);
+            //进行新的视角裁切
             GUI.BeginClip(viewRect);
-            using (var clipScore = new GUI.ClipScope(viewRect))
-            {
-                var vect = GUIScaleUtility.BeginScale(ref canvasRect, canvasRect.size * 0.5f, zoom, true, false);
-
-                for (int i = 0; i < 6; i++)
-                {
-                    for (int j = 0; j < 6; j++)
-                    {
-                        var rect = new Rect(i * 100, j * 100, 100, 100);
-                        GUI.Button(rect, i + ":" + j);
-                    }
-                }
-                GUIScaleUtility.EndScale();
-            }
+            //中间的信息
+            DrawGraph();
+            //结束裁切
             GUI.EndClip();
-            GUI.matrix = Matrix4x4.identity;
-            GUILayoutUtility.GetRect(600/zoom,600 / zoom);
+            //结束尺寸变化
+            GUIScaleUtility.EndScale();
+            graphGUI.EndGraphGUI();
         }
-        var rect0 = GUILayoutUtility.GetRect(0, 100);
-        EditorGUI.LabelField(rect0, "Label");
+    }
+    private void DrawHeader()
+    {
+        graphGUI.BeginToolbarGUI(new Rect(0, 0, position.width, EditorGUIUtility.singleLineHeight));
+        zoom = GUILayout.HorizontalSlider(zoom, 0.5f, 2);
+        graphGUI.EndToolbarGUI();
+    }
+    private void DrawBackGround()
+    {
+    }
+    private void DrawGraph()
+    {
+        if (graphGUI != null)
+        {
+            graphGUI.NodeGUI(node);
+        }
     }
     private void CallBack(Rect selectionRect)
     {
