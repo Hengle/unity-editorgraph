@@ -19,9 +19,9 @@ public class NodeTemp : Node
     public override void NodeUI(GraphGUI host)
     {
         base.NodeUI(host);
-        GUI.Box(position, "");
-        EditorGUI.LabelField(position, "哈哈");
+        
     }
+
     public override void BeginDrag()
     {
         base.BeginDrag();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor.Graphs;
 using UnityEditor;
+using System.Linq;
 
 namespace UnityEditorGraph
 {
@@ -51,6 +52,21 @@ namespace UnityEditorGraph
         public override void NodeGUI(Node n)
         {
             base.NodeGUI(n);
+            n.title = "123456789";
+            n.name  = "123456789";
+            if (n.inputSlots.Count() < 5)
+            {
+                var slot = new Slot(SlotType.InputSlot);
+                slot.title = "我是输入";
+                n.AddSlot(slot);
+            }
+            if (n.outputSlots.Count() < 5)
+            {
+                var slot = new Slot(SlotType.OutputSlot);
+                slot.title = "我是输出";
+                n.AddSlot(slot);
+            }
+            EditorGUI.LabelField(n.position, "哈哈");
         }
         protected override Vector2 GetCenterPosition()
         {
@@ -69,6 +85,7 @@ namespace UnityEditorGraph
         public override void OnGraphGUI()
         {
             base.OnGraphGUI();
+            m_ScrollPosition = Vector2.one;
         }
 
         public override void OnToolbarGUI()

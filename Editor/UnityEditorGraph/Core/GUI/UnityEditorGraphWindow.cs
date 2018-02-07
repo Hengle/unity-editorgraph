@@ -82,7 +82,7 @@ namespace UnityEditorGraph
             using (var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPos,true,true))
             {
                 //绘制canvas
-                graphGUI.BeginGraphGUI(this, new Rect(0,0, windowRect.width * zoomMax, windowRect.height * zoomMax));
+                graphGUI.BeginGraphGUI(this, new Rect(scrollScope.scrollPosition,new Vector2( windowRect.width * zoomMax, windowRect.height * zoomMax)));
                 scrollPos = scrollScope.scrollPosition;
                 //分配滑动区尺寸
                 var canvasRect = GUILayoutUtility.GetRect(windowRect.width * zoomMax / zoom, windowRect.height * zoomMax / zoom);
@@ -105,8 +105,8 @@ namespace UnityEditorGraph
         private void DrawHeader()
         {
             graphGUI.BeginToolbarGUI(new Rect(0, 0, position.width, EditorGUIUtility.singleLineHeight));
-            graphGUI.OnToolbarGUI();
-            //zoom = GUILayout.HorizontalSlider(zoom, 0.5f, 2);
+            //graphGUI.OnToolbarGUI();
+            zoom = GUILayout.HorizontalSlider(zoom, 0.5f, 2);
             graphGUI.EndToolbarGUI();
         }
         private void DrawBackGround()
@@ -114,11 +114,7 @@ namespace UnityEditorGraph
         }
         private void DrawGraph()
         {
-
-            if (graphGUI != null)
-            {
-                graphGUI.OnGraphGUI();
-            }
+            graphGUI.OnGraphGUI();
         }
         #endregion
         private void CallBack(Rect selectionRect)
