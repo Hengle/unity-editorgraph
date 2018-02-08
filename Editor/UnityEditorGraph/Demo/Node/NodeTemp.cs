@@ -7,6 +7,7 @@ using System;
 
 public class NodeTemp : Node
 {
+    public GraphGUI m_graph;
     public string form;
     public override void AddedToGraph()
     {
@@ -18,8 +19,8 @@ public class NodeTemp : Node
     }
     public override void NodeUI(GraphGUI host)
     {
+        m_graph = host;
         base.NodeUI(host);
-        
     }
 
     public override void BeginDrag()
@@ -38,7 +39,7 @@ public class NodeTemp : Node
     public override void EndDrag()
     {
         base.EndDrag();
-        Debug.Log("BeginDrag" + this);
+        Debug.Log("BeginDrag:" + this.name);
     }
     public override void Dirty()
     {

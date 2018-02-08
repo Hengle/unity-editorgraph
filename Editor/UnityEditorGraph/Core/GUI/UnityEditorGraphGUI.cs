@@ -16,7 +16,7 @@ namespace UnityEditorGraph
         public override void AddTools()
         {
             base.AddTools();
-            m_Tools.Add(new NodeTool("Copy", "B", () => { return null; }));
+            m_Tools.Add(new NodeTool("HH", "B", () => { return null; }));
         }
         protected override void AddNode(Node node)
         {
@@ -36,7 +36,6 @@ namespace UnityEditorGraph
         public override void DoBackgroundClickAction()
         {
             base.DoBackgroundClickAction();
-            Selection.activeObject = this;
             Debug.Log("DoBackgroundClickAction");
 
         }
@@ -52,21 +51,7 @@ namespace UnityEditorGraph
         public override void NodeGUI(Node n)
         {
             base.NodeGUI(n);
-            n.title = "123456789";
-            n.name  = "123456789";
-            if (n.inputSlots.Count() < 5)
-            {
-                var slot = new Slot(SlotType.InputSlot);
-                slot.title = "我是输入";
-                n.AddSlot(slot);
-            }
-            if (n.outputSlots.Count() < 5)
-            {
-                var slot = new Slot(SlotType.OutputSlot);
-                slot.title = "我是输出";
-                n.AddSlot(slot);
-            }
-            EditorGUI.LabelField(n.position, "哈哈");
+            Debug.Log("write group:" + n);
         }
         protected override Vector2 GetCenterPosition()
         {
@@ -85,7 +70,6 @@ namespace UnityEditorGraph
         public override void OnGraphGUI()
         {
             base.OnGraphGUI();
-            m_ScrollPosition = Vector2.one;
         }
 
         public override void OnToolbarGUI()
@@ -106,7 +90,7 @@ namespace UnityEditorGraph
         }
         protected override void UpdateUnitySelection()
         {
-            Debug.Log("UpdateUnitySelection");
+            //Debug.Log("UpdateUnitySelection");
             base.UpdateUnitySelection();
         }
     }
